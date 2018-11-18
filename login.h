@@ -7,6 +7,11 @@
 class QTabWidget;
 class QMenu;
 class QHBOxLayuout;
+class QAction;
+class QLineEdit;
+class QGroupBox;
+class QLabel;
+class QPushButton;
 
 class Login : public QWidget
 {
@@ -14,15 +19,33 @@ class Login : public QWidget
 
 public:
     Login();
-    ~Login();
 
 private:
     QTabWidget * tabWidget;
     QWidget * userLogin;
     QWidget * adminLogin;
 
-private slots:
+    QLabel * lbl_userId;
+    QLabel * lbl_userPassword;
 
+    QLabel * lbl_adminId;
+    QLabel * lbl_adminPassword;
+
+    QLineEdit * te_userId;
+    QLineEdit * te_userPassword;
+
+    QLineEdit * te_adminId;
+    QLineEdit * te_adminPassword;
+
+    QPushButton * userLoginBtn;
+    QPushButton * adminLoginBtn;
+
+    void Init();
+    void createAction();
+
+private slots:
+    void userLoginAction();
+    void adminLoginAction();
 };
 
 #endif // LOGIN_H
