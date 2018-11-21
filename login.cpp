@@ -1,8 +1,11 @@
 #include <QtGui>
+#include <QDebug>
 #include "login.h"
 #include "admin.h"
 #include "user.h"
 #include "ui_login.h"
+
+
 
 Login::Login(){
     Init();
@@ -67,10 +70,12 @@ void Login::createAction(){
 }
 
 void Login::userLoginAction(){
-    this -> hide();
-    User user;
-    user.setModal(true);
-    user.exec();
+    if(dbConn()){
+        this -> hide();
+        User user;
+        user.setModal(true);
+        user.exec();
+    }
 }
 
 void Login::adminLoginAction(){
@@ -79,6 +84,45 @@ void Login::adminLoginAction(){
     admin.setModal(true);
     admin.exec();
 }
+
+bool Login::dbConnect(){
+    db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("library.db");
+
+    if(db.open()){
+        return true;
+    }
+    else{
+        QMessageBox::critical(this, tr("DB Connection Error"), "데이터베이스 연결 오류");
+        return false;
+    }
+}
+
+bool Login::dbConn(){
+    bool dbResult = dbConnect();
+
+    if(dbResult){
+        QSqlQuery * qry = new QSqlQuery(db);
+        int count = 0;
+        QString id = te_userId -> text();
+        QString password = te_userPassword -> text();
+
+        if(qry->exec("select * from Users where user_id='"+ id +"' and user_password='"+ password +"'") == true){
+            while(qry->next()){
+                count++;
+            }
+        }
+            if(count >= 1){
+                return true;
+            }
+            if(count < 1){
+                QMessageBox::critical(this, tr("Error"), qry->lastError().text());
+                return false;
+            }
+    }
+    return false;
+}
+
 
 
 

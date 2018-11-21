@@ -3,6 +3,10 @@
 
 #include <QDialog>
 #include <QtWidgets>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+
 
 class QTabWidget;
 class QMenu;
@@ -19,6 +23,8 @@ class Login : public QWidget
 
 public:
     Login();
+    QSqlDatabase db;
+    bool dbConnect();
 
 private:
     QTabWidget * tabWidget;
@@ -46,6 +52,7 @@ private:
 private slots:
     void userLoginAction();
     void adminLoginAction();
+    bool dbConn();
 };
 
 #endif // LOGIN_H
