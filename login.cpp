@@ -72,7 +72,8 @@ void Login::createAction(){
 void Login::userLoginAction(){
     if(dbConn()){
         this -> hide();
-        User user;
+        User user(userNumberId);
+//        user.currentUserId = userNumberId;
         user.setModal(true);
         user.exec();
     }
@@ -109,7 +110,10 @@ bool Login::dbConn(){
 
         if(qry->exec("select * from Users where user_id='"+ id +"' and user_password='"+ password +"'") == true){
             while(qry->next()){
+                userNumberId = qry->value(0).toString();
+                userId = qry->value(1).toString();
                 count++;
+                qDebug() << "userNumberId = " << userNumberId << "userId = " << userId;
             }
         }
             if(count >= 1){

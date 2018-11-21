@@ -25,6 +25,8 @@ public:
     Login();
     QSqlDatabase db;
     bool dbConnect();
+    QString userId;
+    QString userNumberId;
 
 private:
     QTabWidget * tabWidget;

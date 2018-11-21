@@ -4,7 +4,6 @@
 #include <QDialog>
 #include <QtWidgets>
 #include <QSqlQuery>
-//#include <QTableWidget>
 #include <QSqlQueryModel>
 
 
@@ -19,20 +18,24 @@ class User : public QDialog
     Q_OBJECT
 
 public:
-    User();
+    User(QString userNumberId);
     void Init();
     void ListInit();
     QSqlDatabase userDatabase;
 
+    QString bookId;
+    QString currentUserId;
+
 //    ~User();
 
 private:
-//    QTableWidget * tableWidget;
     QTableView * tableView;
+    QTableView * returnTableView;
     QTextCodec * codec;
     QLabel * lbl_search;
     QLineEdit * te_search;
     QPushButton * searchBtn;
+    QPushButton * returnBtn;
 
     QLabel * lbl_title;
     QLabel * lbl_title_result;
@@ -45,14 +48,20 @@ private:
     QLabel * lbl_count;
     QLabel * lbl_count_result;
 
-    QGridLayout * listLayout;
+
+    QVBoxLayout * listLayout;
+    QVBoxLayout * returnListLayout;
     QHBoxLayout * mainLayout;
 
+    QPushButton * rentalBtn;
+
     void createAction();
+    void rentalCount();
 
 private slots:
     void tableViewSelect(const QModelIndex &index);
     void search();
+    void rental();
 };
 
 #endif // USER_H
