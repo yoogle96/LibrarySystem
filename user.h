@@ -24,9 +24,8 @@ public:
     QSqlDatabase userDatabase;
 
     QString bookId;
+    QString rentalId;
     QString currentUserId;
-
-//    ~User();
 
 private:
     QTableView * tableView;
@@ -52,16 +51,18 @@ private:
     QVBoxLayout * listLayout;
     QVBoxLayout * returnListLayout;
     QHBoxLayout * mainLayout;
-
     QPushButton * rentalBtn;
 
     void createAction();
-    void rentalCount();
+    void bookCount(QString bookCountId);
+    void reflashView();
 
 private slots:
-    void tableViewSelect(const QModelIndex &index);
+    void rentalTableViewSelect(const QModelIndex &index);
+    void returnTableViewSelect(const QModelIndex &index);
     void search();
-    void rental();
+    void rentalAct();
+    void returnAct();
 };
 
 #endif // USER_H

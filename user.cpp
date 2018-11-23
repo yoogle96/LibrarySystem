@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QtWidgets>
 #include <QtGui>
+#include <QSqlRecord>
 
 User::User(QString userNumberId)
 {
@@ -15,7 +16,9 @@ User::User(QString userNumberId)
 }
 
 void User::Init(){
-    ListInit();
+    tableView = new QTableView;
+    returnTableView = new QTableView;
+    reflashView();
     codec = QTextCodec::codecForName("eucKR");
     QFont font("unifont", 10, QFont::Bold);
 
@@ -61,7 +64,6 @@ void User::Init(){
     contentLayout -> addWidget(rentalBtn);
 
     mainLayout = new QHBoxLayout;
-//    mainLayout -> addLayout(flayout);
     mainLayout -> addLayout(listLayout);
     mainLayout -> addLayout(contentLayout);
     mainLayout -> addLayout(returnListLayout);
@@ -70,46 +72,25 @@ void User::Init(){
     resize(1000, 500);
 }
 
-void User::ListInit(){
-    Login login;
-    QSqlQueryModel * model = new QSqlQueryModel;
-    QSqlQueryModel * reModel = new QSqlQueryModel;
-    QSqlQuery * qry = new QSqlQuery(login.db);
-    QSqlQuery * reQry = new QSqlQuery(login.db);
-    qry->prepare("select id as id, title as 제목, author as 저자, publisher as 출판사 from Books");
-    qry->exec();
-    model->setQuery(*qry);
-    tableView = new QTableView;
-    tableView->setModel(model);
-    QHeaderView *verticalHeader = tableView->verticalHeader();
-    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    reQry->prepare("select Books.title as 제목, Books.author as 저자, Rentals.rental_date as 대여일자, Rentals.return_date as 반납일자 From Rentals INNER JOIN Users, Books ON Rentals.user_id = :rent_userId and Users.id = :user_userId and Rentals.book_id = Books.id;");
-    reQry->bindValue(":rent_userId", currentUserId);
-    reQry->bindValue(":user_userId", currentUserId);
-    reQry->exec();
-    reModel -> setQuery(*reQry);
-    returnTableView = new QTableView;
-    returnTableView -> setModel(reModel);
-    QHeaderView *reVerticalHeader = returnTableView->verticalHeader();
-    reVerticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    qDebug() << (model->rowCount());
-}
-
 void User::createAction(){
-    connect(tableView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(tableViewSelect(QModelIndex)));
+    connect(tableView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(rentalTableViewSelect(QModelIndex)));
+    connect(returnTableView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(returnTableViewSelect(QModelIndex)));
     connect(searchBtn, SIGNAL(clicked()), this, SLOT(search()));
-    connect(rentalBtn, SIGNAL(clicked()), this, SLOT(rental()));
+    connect(rentalBtn, SIGNAL(clicked()), this, SLOT(rentalAct()));
+    connect(returnBtn, SIGNAL(clicked()), this, SLOT(returnAct()));
 }
 
-void User::tableViewSelect(const QModelIndex &index){
-    QString val = tableView -> model() -> data(index).toString();
-    qDebug() << val;
-    bookId = val;
+void User::rentalTableViewSelect(const QModelIndex &index){
+    int rowIndex;
+    rowIndex= index.row();
+    bookId = tableView->model()->data(tableView->model()->index(rowIndex,0)).toString();
+
+    qDebug() << "bookId = " << bookId;
+    qDebug() << "rentalId = " << rentalId;
+
     QSqlQuery qry;
-    qry.prepare("select title, author, publisher, content, count, total_count from Books where id="+ val +"");
-//    qDebug() << ;
+    qry.prepare("select title, author, publisher, content, count, total_count from Books where id="+ bookId +"");
+
     if(qry.exec()){
         while(qry.next()){
             lbl_title_result -> setText(qry.value(0).toString());
@@ -117,6 +98,7 @@ void User::tableViewSelect(const QModelIndex &index){
             lbl_publisher_result -> setText(qry.value(2).toString());
             te_content_result -> setText(qry.value(3).toString());
             lbl_count_result -> setText(""+qry.value(4).toString()+" / "+qry.value(5).toString()+"");
+
             if(qry.value(4).toInt() == 0){
                 qDebug() << "toInt" << qry.value(4).toInt();
                 rentalBtn->setEnabled(false);
@@ -129,6 +111,13 @@ void User::tableViewSelect(const QModelIndex &index){
     else{
         QMessageBox::critical(this, tr("Erorr"),qry.lastError().text());
     }
+}
+
+void User::returnTableViewSelect(const QModelIndex &index){
+    int rowIndex;
+
+    rowIndex= index.row();
+    rentalId = returnTableView -> model() -> data(returnTableView -> model() -> index(rowIndex,0)).toString();
 }
 
 void User::search(){
@@ -146,7 +135,7 @@ void User::search(){
     qDebug() << (model->rowCount());
 }
 
-void User::rental(){
+void User::rentalAct(){
     Login login;
     QSqlQuery * qry = new QSqlQuery(login.db);
 
@@ -155,21 +144,44 @@ void User::rental(){
     qry->bindValue(":book_id", bookId);
 
     if(qry->exec()){
-        rentalCount();
+        qry->exec("update Books set count = count - 1 where id = "+ bookId +"");
         qDebug() << "실행됨" << currentUserId;
     }
     else{
         QMessageBox::critical(this, tr("Erorr"),qry->lastError().text());
     }
+
+    bookCount(bookId);
+    reflashView();
 }
 
-void User::rentalCount(){
+void User::returnAct(){
+    Login login;
+    QSqlQuery * qry = new QSqlQuery(login.db);
+    QString rentBookId;
+
+    qry->prepare("select book_id from Rentals where id = "+ rentalId +"");
+    if(qry -> exec()){
+        while(qry->next()){
+            rentBookId = qry->value(0).toString();
+        }
+    }
+
+    qry->exec("update Books set count = count + 1 where id = "+ rentBookId +"");
+    qDebug() << "렌트북아이디 = " << rentBookId;
+    qry->exec("delete from Rentals where id = "+ rentalId +"");
+
+    bookCount(rentBookId);
+    reflashView();
+}
+
+void User::bookCount(QString bookCountId){
     Login login;
     QSqlQuery * qry = new QSqlQuery(login.db);
     int count = 0, totalCount = 0;
 
-    qry->prepare("select count, total_count from Books where id = "+bookId+"");
-    qDebug() << "북아이디" << bookId;
+    qry->prepare("select count, total_count from Books where id = "+bookCountId+"");
+//    qDebug() << "북아이디" << bookId;
     if(qry->exec()){
         while(qry->next()){
             count = qry->value(0).toInt();
@@ -177,18 +189,43 @@ void User::rentalCount(){
         }
 
         if(count >= 1){
-            count = count -1;
-            qry->prepare("update Books set count = :count where id = "+bookId+"");
-            qry->bindValue(":count", count);
-            qry->exec();
             lbl_count_result->setText(""+ QString::number(count) +" / "+QString::number(totalCount) +"");
         }
         if(count <= 0){
+            lbl_count_result->setText(""+ QString::number(count) +" / "+QString::number(totalCount) +"");
             rentalBtn->setEnabled(false);
         }
     }
     else{
         QMessageBox::critical(this, tr("Erorr"),qry->lastError().text());
     }
+}
 
+void User::reflashView(){
+    Login login;
+    QSqlQueryModel * model = new QSqlQueryModel;
+    QSqlQuery * qry = new QSqlQuery(login.db);
+
+    qry->prepare("select id as id, title as 제목, author as 저자, publisher as 출판사 from Books");
+    qry->exec();
+    model->setQuery(*qry);
+    tableView->setModel(model);
+    // id 값을 숨긴다.
+    tableView->hideColumn(0);
+    QHeaderView *verticalHeader = tableView->verticalHeader();
+    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+
+    QSqlQueryModel * reModel = new QSqlQueryModel;
+    QSqlQuery * reQry = new QSqlQuery(login.db);
+
+    reQry->prepare("select Rentals.id as id, Books.title as 제목, Books.author as 저자, Rentals.rental_date as 대여일자, Rentals.return_date as 반납일자 From Rentals INNER JOIN Users, Books ON Rentals.user_id = :rent_userId and Users.id = :user_userId and Rentals.book_id = Books.id;");
+    reQry->bindValue(":rent_userId", currentUserId);
+    reQry->bindValue(":user_userId", currentUserId);
+    reQry->exec();
+    reModel -> setQuery(*reQry);
+    returnTableView -> setModel(reModel);
+    returnTableView -> hideColumn(0);
+    QHeaderView *reVerticalHeader = returnTableView->verticalHeader();
+    reVerticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
