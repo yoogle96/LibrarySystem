@@ -70,7 +70,7 @@ void Login::createAction(){
 }
 
 void Login::userLoginAction(){
-    if(dbConn()){
+    if(dbConn(0)){
         this -> hide();
         User user(userNumberId);
 //        user.currentUserId = userNumberId;
@@ -80,10 +80,12 @@ void Login::userLoginAction(){
 }
 
 void Login::adminLoginAction(){
-    this -> hide();
-    Admin admin;
-    admin.setModal(true);
-    admin.exec();
+    if(dbConn(1)){
+        this -> hide();
+        Admin admin;
+        admin.setModal(true);
+        admin.exec();
+    }
 }
 
 bool Login::dbConnect(){
@@ -99,30 +101,39 @@ bool Login::dbConnect(){
     }
 }
 
-bool Login::dbConn(){
+bool Login::dbConn(int whoIs){
     bool dbResult = dbConnect();
+    QString id;
+    QString password;
+    QSqlQuery * qry = new QSqlQuery(db);
 
     if(dbResult){
-        QSqlQuery * qry = new QSqlQuery(db);
-        int count = 0;
-        QString id = te_userId -> text();
-        QString password = te_userPassword -> text();
+//        int count = 0;
+        if(whoIs == 0){
+            id = te_userId -> text();
+            password = te_userPassword -> text();
 
-        if(qry->exec("select * from Users where user_id='"+ id +"' and user_password='"+ password +"'") == true){
-            while(qry->next()){
-                userNumberId = qry->value(0).toString();
-                userId = qry->value(1).toString();
-                count++;
-                qDebug() << "userNumberId = " << userNumberId << "userId = " << userId;
+            if(qry->exec("select * from Users where user_id='"+ id +"' and user_password='"+ password +"'") == true){
+                while(qry->next()){
+                    userNumberId = qry->value(0).toString();
+                    userId = qry->value(1).toString();
+                    return true;
+//                    count++;
+//                    qDebug() << "userNumberId = " << userNumberId << "userId = " << userId;
+                }
             }
         }
-            if(count >= 1){
-                return true;
+        else{
+            id = te_adminId -> text();
+            password = te_adminPassword -> text();
+
+            if(qry->exec("select * from Admins where admin_id='"+ id +"' and admin_password='"+ password +"'")){
+                while(qry->next()){
+                    qDebug() << "여기 실행" << id << password;
+                    return true;
+                }
             }
-            if(count < 1){
-                QMessageBox::critical(this, tr("Error"), qry->lastError().text());
-                return false;
-            }
+        }
     }
     return false;
 }

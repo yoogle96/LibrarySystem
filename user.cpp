@@ -215,7 +215,6 @@ void User::reflashView(){
     QHeaderView *verticalHeader = tableView->verticalHeader();
     verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-
     QSqlQueryModel * reModel = new QSqlQueryModel;
     QSqlQuery * reQry = new QSqlQuery(login.db);
 

@@ -54,7 +54,7 @@ private:
 private slots:
     void userLoginAction();
     void adminLoginAction();
-    bool dbConn();
+    bool dbConn(int whoIs);
 };
 
 #endif // LOGIN_H
