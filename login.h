@@ -17,7 +17,7 @@ class QGroupBox;
 class QLabel;
 class QPushButton;
 
-class Login : public QWidget
+class Login : public QDialog
 {
     Q_OBJECT
 

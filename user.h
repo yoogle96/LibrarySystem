@@ -26,6 +26,8 @@ public:
     QString bookId;
     QString rentalId;
     QString currentUserId;
+    QString userId;
+    QString userName;
 
 private:
     QTableView * tableView;
@@ -47,11 +49,19 @@ private:
     QLabel * lbl_count;
     QLabel * lbl_count_result;
 
+    QLabel * lbl_top_userId;
+    QLabel * lbl_top_userName;
+
 
     QVBoxLayout * listLayout;
     QVBoxLayout * returnListLayout;
-    QHBoxLayout * mainLayout;
+    QHBoxLayout * contentLayout;
+    QHBoxLayout * topLayout;
+    QVBoxLayout * mainLayout;
+
+
     QPushButton * rentalBtn;
+    QPushButton * logoutBtn;
 
     void createAction();
     void bookCount(QString bookCountId);
@@ -63,6 +73,7 @@ private slots:
     void search();
     void rentalAct();
     void returnAct();
+    void logoutAct();
 };
 
 #endif // USER_H

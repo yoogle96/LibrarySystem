@@ -23,6 +23,7 @@ private:
     QTableView * tableView;
     QVBoxLayout * listLayout;
     QVBoxLayout * listSubLayout;
+    QHBoxLayout * listSubTopLayout;
     QHBoxLayout * mainLayout;
     QFormLayout * flayout;
     QHBoxLayout * btnLayout;
@@ -44,6 +45,7 @@ private:
     QPushButton * updateBtn;
     QPushButton * deleteBtn;
     QPushButton * addBtn;
+    QPushButton * logoutBtn;
 
     void Init();
     void setAdminLayout();
@@ -55,6 +57,7 @@ private slots:
     void updateBtnAct();
     void deleteBtnAct();
     void addBtnAct();
+    void logoutAct();
 };
 
 #endif // ADMIN_H

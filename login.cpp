@@ -31,11 +31,14 @@ void Login::Init(){
     lbl_adminId = new QLabel("AdminID");
     lbl_adminPassword = new QLabel("AdminPassword");
 
+
     te_userId = new QLineEdit;
     te_userPassword = new QLineEdit;
+    te_userPassword -> setEchoMode(QLineEdit::Password);
 
     te_adminId = new QLineEdit;
     te_adminPassword = new QLineEdit;
+    te_adminPassword -> setEchoMode(QLineEdit::Password);
 
     userLoginBtn = new QPushButton(tr("Login"));
     adminLoginBtn = new QPushButton(tr("Login"));

@@ -18,8 +18,10 @@ void Admin::Init(){
     tableView = new QTableView;
     listLayout = new QVBoxLayout;
     listSubLayout = new QVBoxLayout;
+    listSubTopLayout = new QHBoxLayout;
     btnLayout = new QHBoxLayout;
     mainLayout = new QHBoxLayout;
+
 
     lbl_title = new QLabel("제목 : ");
     lbl_author = new QLabel("저자 : ");
@@ -38,6 +40,9 @@ void Admin::Init(){
     updateBtn = new QPushButton("수정");
     deleteBtn = new QPushButton("삭제");
     addBtn = new QPushButton("추가");
+    logoutBtn = new QPushButton("로그아웃");
+
+
 }
 
 void Admin::setAdminLayout(){
@@ -55,6 +60,12 @@ void Admin::setAdminLayout(){
     btnLayout -> addWidget(deleteBtn);
 
     listLayout -> addWidget(tableView);
+
+    logoutBtn -> setFixedSize(100,40);
+    listSubTopLayout -> addWidget(logoutBtn);
+    listSubTopLayout -> setAlignment(Qt::AlignRight);
+
+    listSubLayout -> addLayout(listSubTopLayout);
     listSubLayout -> addLayout(flayout);
     listSubLayout -> addLayout(btnLayout);
 
@@ -62,6 +73,7 @@ void Admin::setAdminLayout(){
     mainLayout -> addLayout(listSubLayout);
 
     setLayout(mainLayout);
+//    logoutBtn -> resize(50,50);
     resize(1000,500);
 }
 
@@ -85,6 +97,7 @@ void Admin::actionConnect(){
     connect(addBtn, SIGNAL(clicked()), this, SLOT(addBtnAct()));
     connect(updateBtn, SIGNAL(clicked()), this, SLOT(updateBtnAct()));
     connect(deleteBtn, SIGNAL(clicked()), this, SLOT(deleteBtnAct()));
+    connect(logoutBtn, SIGNAL(clicked()), this, SLOT(logoutAct()));
 }
 
 void Admin::selectTableView(const QModelIndex &index){
@@ -177,4 +190,11 @@ void Admin::deleteBtnAct(){
     setTableView();
     qDebug() << "delete여기실행";
 
+}
+
+void Admin::logoutAct(){
+    Login login;
+    this->hide();
+    login.setModal(true);
+    login.exec();
 }

@@ -1,4 +1,5 @@
 #include "user.h"
+#include "rating.h"
 #include "ui_user.h"
 #include "login.h"
 #include <QTableView>
@@ -18,7 +19,6 @@ User::User(QString userNumberId)
 void User::Init(){
     tableView = new QTableView;
     returnTableView = new QTableView;
-    reflashView();
     codec = QTextCodec::codecForName("eucKR");
     QFont font("unifont", 10, QFont::Bold);
 
@@ -39,6 +39,17 @@ void User::Init(){
 
     searchBtn = new QPushButton("검색");
     rentalBtn = new QPushButton("대여");
+    logoutBtn = new QPushButton("로그아웃");
+
+    topLayout = new QHBoxLayout;
+    lbl_top_userId = new QLabel("");
+    lbl_top_userName = new QLabel("");
+
+    topLayout -> addWidget(lbl_top_userId);
+    topLayout -> addWidget(lbl_top_userName);
+    topLayout -> addWidget(logoutBtn);
+    topLayout -> setAlignment(Qt::AlignRight);
+
 
     QFormLayout * flayout = new QFormLayout;
     flayout -> addRow(lbl_search, te_search);
@@ -56,19 +67,27 @@ void User::Init(){
 
     returnBtn = new QPushButton("반납");
     returnListLayout = new QVBoxLayout;
+    returnListLayout -> addLayout(topLayout);
     returnListLayout -> addWidget(returnTableView);
     returnListLayout -> addWidget(returnBtn);
 
-    QVBoxLayout * contentLayout = new QVBoxLayout;
-    contentLayout -> addLayout(subLayout);
-    contentLayout -> addWidget(rentalBtn);
+    QVBoxLayout * subContentLayout = new QVBoxLayout;
+    subContentLayout -> setContentsMargins(0,50,0,0);
+    subContentLayout -> addLayout(subLayout);
+    subContentLayout -> addWidget(rentalBtn);
 
-    mainLayout = new QHBoxLayout;
-    mainLayout -> addLayout(listLayout);
+    contentLayout = new QHBoxLayout;
+    contentLayout -> addLayout(listLayout);
+    contentLayout -> addLayout(subContentLayout);
+    contentLayout -> addLayout(returnListLayout);
+//    contentLayout -> addLayout(topLayout);
+
+    mainLayout = new QVBoxLayout;
+//    mainLayout -> addLayout(returnListLayout);
     mainLayout -> addLayout(contentLayout);
-    mainLayout -> addLayout(returnListLayout);
     setLayout(mainLayout);
 
+    reflashView();
     resize(1000, 500);
 }
 
@@ -78,6 +97,7 @@ void User::createAction(){
     connect(searchBtn, SIGNAL(clicked()), this, SLOT(search()));
     connect(rentalBtn, SIGNAL(clicked()), this, SLOT(rentalAct()));
     connect(returnBtn, SIGNAL(clicked()), this, SLOT(returnAct()));
+    connect(logoutBtn, SIGNAL(clicked()), this, SLOT(logoutAct()));
 }
 
 void User::rentalTableViewSelect(const QModelIndex &index){
@@ -172,6 +192,12 @@ void User::returnAct(){
     qry->exec("delete from Rentals where id = "+ rentalId +"");
 
     bookCount(rentBookId);
+
+    Rating rating(rentBookId);
+
+    rating.exec();
+    rating.setWindowFlags(Qt::WindowCloseButtonHint);
+
     reflashView();
 }
 
@@ -206,7 +232,15 @@ void User::reflashView(){
     QSqlQueryModel * model = new QSqlQueryModel;
     QSqlQuery * qry = new QSqlQuery(login.db);
 
-    qry->prepare("select id as id, title as 제목, author as 저자, publisher as 출판사 from Books");
+    qry->prepare("select user_id, name from Users where id = "+currentUserId+"");
+    if(qry->exec()){
+        while(qry->next()){
+            lbl_top_userId -> setText(qry->value(0).toString());
+            lbl_top_userName -> setText(qry->value(1).toString());
+        }
+    }
+
+    qry->prepare("select id as id, title as 제목, author as 저자, publisher as 출판사, rating as 평점 from Books");
     qry->exec();
     model->setQuery(*qry);
     tableView->setModel(model);
@@ -227,4 +261,12 @@ void User::reflashView(){
     returnTableView -> hideColumn(0);
     QHeaderView *reVerticalHeader = returnTableView->verticalHeader();
     reVerticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+}
+
+void User::logoutAct(){
+    qDebug() << "로그아웃 실행";
+    Login login;
+    this -> hide();
+    login.setModal(true);
+    login.exec();
 }

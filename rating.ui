@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>User</class>
- <widget class="QDialog" name="User">
+ <class>rating</class>
+ <widget class="QDialog" name="rating">
   <property name="geometry">
    <rect>
     <x>0</x>
