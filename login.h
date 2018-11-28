@@ -24,7 +24,7 @@ class Login : public QDialog
 public:
     Login();
     QSqlDatabase db;
-    bool dbConnect();
+    void dbConnect();
     QString userId;
     QString userNumberId;
 
@@ -50,11 +50,12 @@ private:
 
     void Init();
     void createAction();
+    bool loginValue(int whoIs);
 
 private slots:
     void userLoginAction();
     void adminLoginAction();
-    bool dbConn(int whoIs);
+
 };
 
 #endif // LOGIN_H

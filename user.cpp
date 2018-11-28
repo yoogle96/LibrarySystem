@@ -88,7 +88,7 @@ void User::Init(){
     setLayout(mainLayout);
 
     reflashView();
-    resize(1000, 500);
+    resize(1200, 550);
 }
 
 void User::createAction(){
@@ -151,8 +151,6 @@ void User::search(){
     tableView->setModel(model);
     QHeaderView *verticalHeader = tableView->verticalHeader();
     verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    qDebug() << (model->rowCount());
 }
 
 void User::rentalAct(){
@@ -207,7 +205,6 @@ void User::bookCount(QString bookCountId){
     int count = 0, totalCount = 0;
 
     qry->prepare("select count, total_count from Books where id = "+bookCountId+"");
-//    qDebug() << "북아이디" << bookId;
     if(qry->exec()){
         while(qry->next()){
             count = qry->value(0).toInt();

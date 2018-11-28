@@ -33,14 +33,11 @@ void Rating::connectionAct(){
 }
 
 void Rating::setValue(int value){
-    qDebug() << "벨류 = " << value;
     ratingSlider -> setValue(value);
     sliderValue -> setText(QString::number(value));
 }
 
 void Rating::ratingAct(){
-
-    qDebug() << "여기 실행";
     Login login;
     float currentRatingCount = 0.0;
     float currentRatingTotal = 0.0;
@@ -56,17 +53,9 @@ void Rating::ratingAct(){
         }
     }
 
-    qDebug() << "currentRatingCount = " << currentRatingCount;
-    qDebug() << "currentRating = " << currentRating;
-
     currentRatingCount += 1;
     currentRatingTotal += sliderValue -> text().toInt();
     currentRating = (currentRatingTotal / currentRatingCount);
-
-    qDebug() << "-------------------";
-    qDebug() << "currentRatingCount = " << currentRatingCount;
-    qDebug() << "slider = " << sliderValue -> text().toFloat();
-    qDebug() << "currentRating = " << currentRating;
 
     qry -> prepare("update Books set rating_count = :currentRatingCount, rating = round(:currentRating, 2), rating_total = :currentRatingTotal where id = :bookId");
     qry -> bindValue(":currentRatingCount", currentRatingCount);

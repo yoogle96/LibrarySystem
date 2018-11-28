@@ -8,9 +8,7 @@
 
 
 QT_BEGIN_NAMESPACE
-//class QListView;
-//class QListWidget;
-//class QTableWidget;
+
 QT_END_NAMESPACE
 
 class User : public QDialog

@@ -106,6 +106,7 @@ void Admin::selectTableView(const QModelIndex &index){
 
     QSqlQuery qry;
     qry.prepare("select title, author, publisher, content, count, total_count from Books where id="+ bookId +"");
+   
 
     if(qry.exec()){
         while(qry.next()){

@@ -9,6 +9,11 @@
 
 Login::Login(){
     Init();
+    try {
+        dbConnect();
+    } catch (char const* errorContent) {
+        QMessageBox::critical(this, tr("DB Connection Error"), errorContent);
+    }
     createAction();
 }
 
@@ -73,17 +78,16 @@ void Login::createAction(){
 }
 
 void Login::userLoginAction(){
-    if(dbConn(0)){
+    if(loginValue(0)){
         this -> hide();
         User user(userNumberId);
-//        user.currentUserId = userNumberId;
         user.setModal(true);
         user.exec();
     }
 }
 
 void Login::adminLoginAction(){
-    if(dbConn(1)){
+    if(loginValue(1)){
         this -> hide();
         Admin admin;
         admin.setModal(true);
@@ -91,27 +95,22 @@ void Login::adminLoginAction(){
     }
 }
 
-bool Login::dbConnect(){
+void Login::dbConnect(){
     db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName("library.db");
 
     if(db.open()){
-        return true;
     }
     else{
-        QMessageBox::critical(this, tr("DB Connection Error"), "데이터베이스 연결 오류");
-        return false;
+        throw "데이터베이스 연결 오류";
     }
 }
 
-bool Login::dbConn(int whoIs){
-    bool dbResult = dbConnect();
+bool Login::loginValue(int whoIs){
     QString id;
     QString password;
     QSqlQuery * qry = new QSqlQuery(db);
 
-    if(dbResult){
-//        int count = 0;
         if(whoIs == 0){
             id = te_userId -> text();
             password = te_userPassword -> text();
@@ -121,9 +120,8 @@ bool Login::dbConn(int whoIs){
                     userNumberId = qry->value(0).toString();
                     userId = qry->value(1).toString();
                     return true;
-//                    count++;
-//                    qDebug() << "userNumberId = " << userNumberId << "userId = " << userId;
                 }
+                QMessageBox::critical(this, tr("DB Connection Error"), "아이디 또는 비밀번호를 잘못 입력하셨습니다");
             }
         }
         else{
@@ -132,13 +130,12 @@ bool Login::dbConn(int whoIs){
 
             if(qry->exec("select * from Admins where admin_id='"+ id +"' and admin_password='"+ password +"'")){
                 while(qry->next()){
-                    qDebug() << "여기 실행" << id << password;
                     return true;
                 }
+                QMessageBox::critical(this, tr("DB Connection Error"), "아이디 또는 비밀번호를 잘못 입력하셨습니다");
             }
         }
-    }
-    return false;
+      return false;
 }
 
 
